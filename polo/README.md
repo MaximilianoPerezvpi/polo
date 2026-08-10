@@ -4,7 +4,7 @@
 
 **Asistente personal con IA, modular y extensible — corre 100% local o en la nube.**
 
-[![CI](https://github.com/TU-USUARIO/polo/actions/workflows/ci.yml/badge.svg)](https://github.com/TU-USUARIO/polo/actions/workflows/ci.yml)
+[![CI](https://github.com/MaximilianoPerezvpi/polo/actions/workflows/ci.yml/badge.svg)](https://github.com/MaximilianoPerezvpi/polo/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Tests](https://img.shields.io/badge/tests-108%20passing-brightgreen)
 ![Types](https://img.shields.io/badge/mypy-strict-blue)
