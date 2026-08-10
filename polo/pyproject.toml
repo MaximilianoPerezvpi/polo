@@ -1,0 +1,85 @@
+[project]
+name = "polo"
+version = "0.0.1"
+description = "POLO — asistente personal modular, local-first y gratuito."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "structlog>=24.1",
+    "rich>=13.7",
+    "ollama>=0.3",
+    "tenacity>=8.3",
+    "numpy>=1.26",
+    "httpx>=0.27",
+    "ddgs>=9.0",
+    "pyttsx3>=2.90",
+]
+
+[project.optional-dependencies]
+# Voz neuronal Kokoro (opcional). Instalar con: uv sync --extra kokoro
+kokoro = ["kokoro-onnx>=0.4"]
+# Escucha por voz (STT). Instalar con: uv sync --extra stt
+stt = ["faster-whisper>=1.0", "sounddevice>=0.4"]
+# Cerebro en la nube (OpenAI-compatible, p. ej. NVIDIA NIM). uv sync --extra cloud
+cloud = ["openai>=1.40"]
+
+[project.scripts]
+# Esto crea el comando `polo` en la terminal una vez instalado.
+polo = "polo.cli.app:main"
+
+[dependency-groups]
+# Dependencias solo de desarrollo (no se instalan en producción).
+dev = [
+    "pytest>=8.2",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/polo"]
+
+# ─────────────────────────────────────────────────────────────
+# Ruff: linter + formateador (reemplaza a black, isort, flake8).
+# ─────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Un set de reglas sensato sin volverse loco al inicio.
+select = [
+    "E",   # errores de estilo (pycodestyle)
+    "F",   # errores lógicos (pyflakes)
+    "I",   # orden de imports (isort)
+    "UP",  # moderniza sintaxis (pyupgrade)
+    "B",   # bugs comunes (flake8-bugbear)
+    "SIM", # simplificaciones
+]
+
+# ─────────────────────────────────────────────────────────────
+# Mypy: verificación de tipos estática.
+# ─────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+
+# Librerías sin type stubs: ignoramos la falta de tipos solo para ellas.
+[[tool.mypy.overrides]]
+module = ["pyttsx3", "pyttsx3.*", "kokoro_onnx", "kokoro_onnx.*", "faster_whisper", "faster_whisper.*", "sounddevice", "sounddevice.*"]
+ignore_missing_imports = true
+
+# ─────────────────────────────────────────────────────────────
+# Pytest: framework de tests.
+# ─────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v"
