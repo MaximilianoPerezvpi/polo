@@ -21,6 +21,7 @@ from polo.core.models import (
     MemoryItem,
     Message,
     Role,
+    ToolSpec,
     UserInput,
 )
 from polo.core.ports.llm import LLMPort
@@ -81,12 +82,16 @@ class Orchestrator:
         system_prompt: str,
         recall_k: int = 5,
         auto_extract: bool = True,
+        history_window: int = 20,
     ) -> None:
         self._llm = llm
         self._memory = memory
         self._tools = tools
         self._recall_k = recall_k
         self._auto_extract = auto_extract
+        # Cuántos mensajes recientes mandar al modelo (además del system). Acota
+        # el costo/latencia en charlas largas. 0 = sin límite.
+        self._history_window = history_window
         self._history: list[Message] = [Message(role=Role.SYSTEM, content=system_prompt)]
 
     def handle(self, user_input: UserInput) -> AssistantOutput:
@@ -139,6 +144,10 @@ class Orchestrator:
             for call in response.tool_calls:
                 resultado = self._tools.execute(call)
                 working.append(Message(role=Role.TOOL, content=resultado, tool_name=call.name))
+                # Acciones terminales (poner música, abrir app...): el resultado
+                # YA es la respuesta. Devolvemos directo, sin otro viaje al modelo.
+                if self._tools.is_final(call.name):
+                    return resultado
 
         return "No pude completar la tarea con las herramientas disponibles."
 
@@ -157,7 +166,11 @@ class Orchestrator:
             bloque = "Datos que recordás sobre el usuario (de charlas anteriores):\n"
             bloque += "\n".join(f"- {m.text}" for m in recalled)
             payload.append(Message(role=Role.SYSTEM, content=bloque))
-        payload += self._history[1:]
+        # Solo los últimos N mensajes: acota costo/latencia en charlas largas.
+        historial = self._history[1:]
+        if self._history_window > 0:
+            historial = historial[-self._history_window :]
+        payload += historial
         return payload
 
     def _store_if_new(self, fact: str) -> None:
@@ -189,6 +202,9 @@ class Orchestrator:
             self._store_if_new(hecho)
 
     # ── Inspección / control ──────────────────────────────────────────────
+
+    def tool_specs(self) -> list[ToolSpec]:
+        return self._tools.specs()
 
     def memories(self) -> list[MemoryItem]:
         return self._memory.all()

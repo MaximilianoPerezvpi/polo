@@ -23,13 +23,17 @@ class ToolRegistry:
     def __init__(self, tools: list[Tool], confirmer: ConfirmerPort | None = None) -> None:
         self._tools: dict[str, Tool] = {t.name: t for t in tools}
         self._confirmer = confirmer
+        # Las herramientas no cambian en runtime: construimos las specs una vez.
+        self._specs_cache: list[ToolSpec] | None = None
 
     def specs(self) -> list[ToolSpec]:
         """Las descripciones de todas las herramientas, para ofrecérselas al modelo."""
-        return [
-            ToolSpec(name=t.name, description=t.description, parameters=t.parameters())
-            for t in self._tools.values()
-        ]
+        if self._specs_cache is None:
+            self._specs_cache = [
+                ToolSpec(name=t.name, description=t.description, parameters=t.parameters())
+                for t in self._tools.values()
+            ]
+        return self._specs_cache
 
     def execute(self, call: ToolCall) -> str:
         """Ejecuta una herramienta pedida por el modelo, con control de permisos."""
@@ -48,6 +52,16 @@ class ToolRegistry:
             return tool.run(call.arguments)
         except Exception as exc:  # noqa: BLE001 - frontera de robustez a propósito
             return f"Error al ejecutar '{tool.name}': {exc}"
+
+    def is_final(self, name: str) -> bool:
+        """True si el resultado de la herramienta ya es la respuesta final.
+
+        Las acciones (poner música, abrir app, volumen) devuelven un mensaje
+        listo para el usuario: no hace falta volver al modelo a redactarlo, lo
+        que ahorra un viaje y hace todo más rápido.
+        """
+        tool = self._tools.get(name)
+        return bool(getattr(tool, "final", False))
 
     def __len__(self) -> int:
         return len(self._tools)

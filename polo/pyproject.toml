@@ -22,10 +22,17 @@ dependencies = [
 kokoro = ["kokoro-onnx>=0.4"]
 # Escucha por voz (STT). Instalar con: uv sync --extra stt
 stt = ["faster-whisper>=1.0", "sounddevice>=0.4"]
+# Interfaz grafica web (opcional). Instalar con: uv sync --extra gui
+gui = ["fastapi>=0.110", "uvicorn>=0.29"]
+# Voz Magpie de NVIDIA (nube). Instalar con: uv sync --extra nimvoice
+nimvoice = ["nvidia-riva-client>=2.14"]
+# Spotify (reproducir canciones). Instalar con: uv sync --extra spotify
+spotify = ["spotipy>=2.23"]
 # Cerebro en la nube (OpenAI-compatible, p. ej. NVIDIA NIM). uv sync --extra cloud
 cloud = ["openai>=1.40"]
 
 [project.scripts]
+polo-web = "polo.interfaces.web.server:run"
 # Esto crea el comando `polo` en la terminal una vez instalado.
 polo = "polo.cli.app:main"
 
@@ -73,7 +80,7 @@ files = ["src", "tests"]
 
 # Librerías sin type stubs: ignoramos la falta de tipos solo para ellas.
 [[tool.mypy.overrides]]
-module = ["pyttsx3", "pyttsx3.*", "kokoro_onnx", "kokoro_onnx.*", "faster_whisper", "faster_whisper.*", "sounddevice", "sounddevice.*"]
+module = ["pyttsx3", "pyttsx3.*", "kokoro_onnx", "kokoro_onnx.*", "faster_whisper", "faster_whisper.*", "sounddevice", "sounddevice.*", "uvicorn", "uvicorn.*", "riva", "riva.*", "spotipy", "spotipy.*"]
 ignore_missing_imports = true
 
 # ─────────────────────────────────────────────────────────────

@@ -70,6 +70,7 @@ def _lanzar_real(nombre: str) -> None:
 class VolumeTool:
     """Sube, baja o silencia el volumen del sistema."""
 
+    final = True
     name = "volumen"
     description = (
         "Controla el volumen del sistema. Argumento 'accion': 'subir', 'bajar' "
@@ -125,6 +126,7 @@ class VolumeTool:
 class OpenAppTool:
     """Abre una aplicación por su nombre."""
 
+    final = True
     name = "abrir_aplicacion"
     description = (
         "Abre una aplicación por su nombre (ej: chrome, notepad, spotify). Argumento: 'nombre'."
@@ -165,6 +167,7 @@ class OpenAppTool:
 class MediaControlTool:
     """Controla la reproducción de música (Spotify, YouTube, cualquier player)."""
 
+    final = True
     name = "control_musica"
     description = (
         "Controla la música que esté sonando en cualquier reproductor (Spotify, "

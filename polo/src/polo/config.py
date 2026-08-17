@@ -47,14 +47,21 @@ class Settings(BaseSettings):
     # La personalidad de POLO. Vive aquí, en configuración, no incrustada en el
     # código: así ajustar su carácter no requiere tocar la lógica.
     system_prompt: str = (
-        "Eres POLO, un asistente personal. Respondes en español de forma "
-        "clara y directa. Sé CONCISO: respuestas breves, sin rodeos ni "
-        "relleno, porque tus respuestas pueden leerse en voz alta. Eres "
-        "honesto: si no sabes algo, lo dices. "
-        "Tienes herramientas disponibles, pero las usas SOLO cuando la tarea "
-        "realmente las necesita. Para saludos, charla o preguntas generales, "
-        "respondes normalmente en español, SIN mencionar funciones, JSON ni "
-        "herramientas, y sin disculparte por no usarlas."
+        "Eres POLO, un asistente personal. Respondes en español de forma clara "
+        "y directa. Sé CONCISO: respuestas breves, sin relleno, porque pueden "
+        "leerse en voz alta. Eres honesto: si no sabes algo, lo dices. "
+        "REGLA IMPORTANTE: a un saludo o charla casual (por ejemplo 'hola', "
+        "'buenas', '¿cómo estás?', 'gracias', 'chau') respondes SIEMPRE de forma "
+        "natural y amable, SIN usar herramientas y SIN mencionar funciones. "
+        "Ejemplo — Usuario: 'Hola' → Tú: '¡Hola! ¿En qué te puedo ayudar?'. "
+        "JAMÁS respondas que 'no hay una función para saludar' ni nada parecido. "
+        "Tienes herramientas para acciones reales (buscar en la web, clima, abrir "
+        "aplicaciones y archivos, música y videos, tareas, convertir monedas, ver "
+        "imágenes): usá la que corresponda SOLO cuando el pedido lo requiera. Si "
+        "te piden buscar algo, el clima, abrir una app o poner música, usá la "
+        "herramienta correspondiente en lugar de decir que no podés. Nunca digas "
+        "que no tenés acceso a información en tiempo real si tenés una herramienta "
+        "para conseguirla."
     )
 
     # Cuánto tiempo Ollama mantiene el modelo cargado en RAM entre mensajes.
@@ -87,6 +94,10 @@ class Settings(BaseSettings):
     # Ponlo en true si quieres que POLO aprenda hechos solo (más lento).
     memory_auto_extract: bool = False
 
+    # Cuántos mensajes recientes mandar al modelo (acota costo/latencia en
+    # charlas largas). 0 = sin límite.
+    history_window: int = 20
+
     # ── Plugins (Fase 4) ──────────────────────────────────────
     # Si POLO carga plugins desde su carpeta de plugins (~/.polo/plugins).
     # Ponlo en false para desactivarlos por completo.
@@ -105,6 +116,26 @@ class Settings(BaseSettings):
     kokoro_voices_path: str = ""  # ruta al archivo de voces (ver README)
     kokoro_voice: str = "ef_dora"  # voz en español
     kokoro_lang: str = "es"
+    # Voz Magpie de NVIDIA (nube, usa la misma nim_api_key). voice_engine="nim".
+    nim_tts_voice: str = "Magpie-Multilingual.ES-US.Isabela"
+    nim_tts_language: str = "es-US"
+    # Voz de la GUI web: "browser" (voz del navegador) o "nim" (Magpie, servidor).
+    web_tts: str = "browser"
+    # Ciudad para el clima del panel HUD de la GUI (vacío = no mostrar clima).
+    dashboard_city: str = ""
+
+    # ── Spotify (opcional) ────────────────────────────────────
+    # Para reproducir canciones. Creá una app en developer.spotify.com y pegá
+    # aquí client id y secret. Requiere Premium.
+    spotify_enabled: bool = False
+    spotify_client_id: str = ""
+    spotify_client_secret: str = ""
+    spotify_redirect_uri: str = "http://127.0.0.1:8888/callback"
+
+    # ── YouTube (opcional) ────────────────────────────────────
+    # Sin key, POLO abre la búsqueda de YouTube. Con una API key de Google Cloud
+    # (YouTube Data API v3), reproduce el primer video directo.
+    youtube_api_key: str = ""
 
     # ── Escucha por voz / STT (Fase 5, Paso B) ────────────────
     # Si POLO puede escucharte por micrófono (Enter vacío = grabar).

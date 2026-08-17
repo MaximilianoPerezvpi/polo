@@ -1,0 +1,17 @@
+# Secretos (API keys) - NUNCA subir
+.env
+
+# Entornos y dependencias
+.venv/
+__pycache__/
+*.pyc
+
+# Cachés de herramientas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Artefactos de build
+dist/
+build/
+*.egg-info/

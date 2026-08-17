@@ -125,3 +125,37 @@ def test_kokoro_speak_no_crashea_si_falla() -> None:
 
     speaker = KokoroSpeaker(voice="ef_dora", engine=engine, player=lambda s, sr: None)
     speaker.speak("hola")  # no debe lanzar
+
+
+def test_nim_speaker_sintetiza_y_reproduce() -> None:
+    # Síntesis falsa que devuelve audio; reproductor que registra.
+    from types import SimpleNamespace
+
+    from polo.adapters.speech.nim_speaker import NimSpeaker
+
+    synth = MagicMock()
+    synth.synthesize.return_value = SimpleNamespace(audio=b"\x00\x01\x02\x03")
+    reproducido: list[bytes] = []
+
+    speaker = NimSpeaker(
+        api_key="x",
+        voice="Magpie-Multilingual.ES-US.Isabela",
+        synth=synth,
+        player=lambda audio, sr: reproducido.append(audio),
+    )
+    speaker.speak("hola")
+
+    _, kwargs = synth.synthesize.call_args
+    assert kwargs["voice_name"] == "Magpie-Multilingual.ES-US.Isabela"
+    assert kwargs["language_code"] == "es-US"
+    assert reproducido == [b"\x00\x01\x02\x03"]
+
+
+def test_nim_speaker_no_crashea_si_falla() -> None:
+    from polo.adapters.speech.nim_speaker import NimSpeaker
+
+    synth = MagicMock()
+    synth.synthesize.side_effect = RuntimeError("sin red")
+
+    speaker = NimSpeaker(api_key="x", synth=synth, player=lambda a, sr: None)
+    speaker.speak("hola")  # no debe lanzar

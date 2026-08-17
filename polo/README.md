@@ -4,9 +4,9 @@
 
 **Asistente personal con IA, modular y extensible — corre 100% local o en la nube.**
 
-[![CI](https://github.com/MaximilianoPerezvpi/polo/actions/workflows/ci.yml/badge.svg)](https://github.com/MaximilianoPerezvpi/polo/actions/workflows/ci.yml)
+[![CI](https://github.com/TU-USUARIO/polo/actions/workflows/ci.yml/badge.svg)](https://github.com/TU-USUARIO/polo/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
-![Tests](https://img.shields.io/badge/tests-108%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-155%20passing-brightgreen)
 ![Types](https://img.shields.io/badge/mypy-strict-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -53,6 +53,9 @@ entre sesiones.
 |------|----------|
 | 💬 **Conversación** | Diálogo natural en español, con personalidad configurable. |
 | 🧠 **Memoria** | Recuerda hechos entre sesiones (base vectorial propia sobre SQLite). |
+| ✅ **Tareas** | Gestiona tu lista de pendientes: agregar, listar, completar. |
+| ▶️ **YouTube** | Busca y reproduce videos (búsqueda directa, o con API key). |
+| 🌐 **Web** | Abre sitios por nombre (Gmail, Calendar, Instagram...) o URL. |
 | 🧰 **Herramientas** | Hora, cálculo, clima, búsqueda web, lectura/escritura de archivos. |
 | 🗣️ **Voz (salida)** | Habla sus respuestas (voz del sistema o Kokoro neuronal). |
 | 🎤 **Voz (entrada)** | Te escucha por micrófono (Whisper local, detección de fin de habla). |
@@ -60,6 +63,7 @@ entre sesiones.
 | 🖥️ **Control de PC** | Volumen, abrir apps, control de música, gestión de archivos. |
 | 🧩 **Plugins** | Aprende habilidades nuevas cargando un archivo, sin tocar el núcleo. |
 | ☁️ **Cerebro híbrido** | Local (Ollama) o nube (NVIDIA NIM), con respaldo automático. |
+| 🎨 **Interfaz** | Terminal, o GUI web futurista: el núcleo habla, escucha y reacciona. |
 
 Todas las acciones con efecto (escribir/mover archivos, abrir apps) piden
 **confirmación** antes de ejecutarse, y el acceso a archivos sensibles
@@ -164,6 +168,16 @@ uv sync --extra kokoro --extra stt --extra cloud
 
 Comandos dentro de POLO: `recordá que ...`, `/memoria`, `/olvidar`,
 `/herramientas`, `salir`.
+
+### Interfaz gráfica (opcional)
+
+```bash
+uv sync --extra gui
+uv run polo-web
+```
+
+Abrí `http://127.0.0.1:8000` en el navegador: una GUI futurista con un núcleo
+animado que reacciona mientras POLO piensa.
 
 ## Configuración
 

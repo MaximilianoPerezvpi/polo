@@ -13,6 +13,7 @@ Implementa MemoryPort. El núcleo no sabe nada de esto.
 from __future__ import annotations
 
 import sqlite3
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -36,7 +37,10 @@ class SqliteMemory:
     def __init__(self, embedder: EmbeddingPort, db_path: Path) -> None:
         self._embedder = embedder
         db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(db_path))
+        # check_same_thread=False: la GUI web atiende cada mensaje en un hilo
+        # distinto. El candado (_lock) serializa el acceso para que sea seguro.
+        self._conn = sqlite3.connect(str(db_path), check_same_thread=False)
+        self._lock = threading.Lock()
         self._init_db()
 
     def _init_db(self) -> None:
@@ -54,14 +58,18 @@ class SqliteMemory:
 
     def remember(self, text: str) -> None:
         vector = np.asarray(self._embedder.embed(text), dtype=np.float32)
-        self._conn.execute(
-            "INSERT INTO memories (text, embedding, created_at) VALUES (?, ?, ?)",
-            (text, vector.tobytes(), datetime.now().isoformat(timespec="seconds")),
-        )
-        self._conn.commit()
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO memories (text, embedding, created_at) VALUES (?, ?, ?)",
+                (text, vector.tobytes(), datetime.now().isoformat(timespec="seconds")),
+            )
+            self._conn.commit()
 
     def recall(self, query: str, k: int) -> list[MemoryItem]:
-        rows = self._conn.execute("SELECT id, text, embedding, created_at FROM memories").fetchall()
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT id, text, embedding, created_at FROM memories"
+            ).fetchall()
         if not rows:
             return []
 
@@ -90,11 +98,13 @@ class SqliteMemory:
         ]
 
     def all(self) -> list[MemoryItem]:
-        rows = self._conn.execute(
-            "SELECT id, text, created_at FROM memories ORDER BY id"
-        ).fetchall()
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT id, text, created_at FROM memories ORDER BY id"
+            ).fetchall()
         return [MemoryItem(id=int(r[0]), text=str(r[1]), created_at=str(r[2])) for r in rows]
 
     def clear(self) -> None:
-        self._conn.execute("DELETE FROM memories")
-        self._conn.commit()
+        with self._lock:
+            self._conn.execute("DELETE FROM memories")
+            self._conn.commit()

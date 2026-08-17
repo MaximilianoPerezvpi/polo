@@ -234,3 +234,91 @@ activo. Con todo en NIM, Ollama queda de puro respaldo (best-effort).
 y ejecuta ruff (linter), ruff format --check (formato), mypy (tipos estrictos) y
 pytest (108 tests). Si algo falla, el push queda marcado en rojo. Los mismos
 comandos que corremos localmente, automatizados en la nube de GitHub.
+
+## Interfaz gráfica web (GUI)
+
+Nueva interfaz en interfaces/web/: un servidor FastAPI (server.py) sirve una GUI
+futurista (index.html, nucleo animado que reacciona al estado) y expone /api/chat.
+
+Refactor clave: la construccion de POLO se extrajo a bootstrap.py
+(build_orchestrator, preflight), compartido entre CLI y web. Cada interfaz pasa su
+propio confirmer. La GUI declina acciones riesgosas por ahora (sin UI de permiso).
+
+El servidor se testea con TestClient + un orquestador falso (sirve HTML, responde,
+maneja errores) sin navegador ni modelos. FastAPI/uvicorn son dependencia opcional
+(extra gui). Comando: polo-web. El nucleo no cambio: la GUI es solo otra interfaz.
+
+## Voz en la nube: NimSpeaker (Magpie TTS de NVIDIA)
+
+Tercera implementacion de SpeechPort: NimSpeaker usa Magpie TTS de NVIDIA (Riva
+gRPC) con la misma API key del cerebro. Corre en la nube (no frena la CPU) y da
+voces naturales con estilo. voice_engine="nim". Cadena de degradacion:
+nim -> kokoro -> pyttsx3 -> texto. Sintesis y reproductor inyectables (testeado
+con dobles, sin red ni audio). Dep opcional: extra nimvoice (nvidia-riva-client).
+
+## Voz en la GUI (Web Speech API del navegador)
+
+La interfaz web habla y escucha usando la Web Speech API nativa del navegador:
+speechSynthesis (POLO dice sus respuestas, voz en espanol, con boton para
+silenciar) y SpeechRecognition (boton de microfono para hablarle). Sin
+dependencias nuevas ni audio del servidor. El nucleo animado reacciona: cian al
+pensar, cian intenso al hablar, magenta al escuchar. Degrada solo: si el
+navegador no soporta la API, oculta los botones y sigue por texto. Funciona en
+Chrome/Edge. La voz Magpie del servidor queda como upgrade futuro (streamear
+audio de mejor calidad al navegador).
+
+## Integracion: Spotify
+
+Nueva herramienta SpotifyPlayTool (adapters/tools/spotify.py): busca un tema y lo
+reproduce via la API oficial de Spotify (spotipy, que maneja el OAuth y cachea el
+token). Requiere Premium y un dispositivo activo; si no hay, avisa. El cliente es
+inyectable (testeado con un doble, sin red ni credenciales). Se activa con
+spotify_enabled y se suma en bootstrap. Dep opcional: extra spotify.
+
+## Optimizacion: herramientas terminales (short-circuit)
+
+Las acciones (reproducir_spotify, abrir_aplicacion, volumen, control_musica)
+llevan final=True. Cuando el modelo las llama, el orquestador devuelve el
+resultado de la herramienta DIRECTO, sin un segundo viaje al modelo para
+redactar. Ahorra latencia en toda accion. Las herramientas informativas
+(busqueda, clima) siguen pasando por el modelo para que redacte. El registro
+expone is_final(); las tools optan con getattr(tool,"final",False).
+
+## Función: tareas/pendientes
+
+TaskStore (adapters/tasks/) persiste una lista de pendientes en JSON, con candado
+(la GUI usa varios hilos). Tres herramientas (agregar_tarea, listar_tareas,
+completar_tarea), todas final=True (acciones rápidas sin segundo viaje al modelo).
+Sin dependencias ni setup: siempre disponibles. Testeadas de punta a punta.
+
+## Función: YouTube
+
+YouTubePlayTool (adapters/tools/youtube.py): sin API key abre la busqueda de
+YouTube en el navegador (cero setup); con una YouTube Data API key busca el
+primer video y lo abre directo. Abridor y buscador inyectables (testeado sin red
+ni navegador). final=True. Config: youtube_api_key.
+
+## Función: abrir sitios web
+
+OpenWebsiteTool (adapters/tools/website.py): abre sitios por nombre conocido
+(gmail, calendario, drive, instagram...), URL o dominio; si no reconoce, busca en
+Google. Da acceso liviano a Gmail y Google Calendar sin OAuth. Abridor inyectable
+(testeado sin navegador). final=True.
+
+## Optimizaciones de rendimiento
+
+1. Ventana de historial (history_window, default 20): el orquestador solo manda
+   los ultimos N mensajes al modelo (ademas del system), acotando costo y
+   latencia en charlas largas. Antes crecia sin limite. Config; 0 = sin limite.
+2. Cache de tool specs: el registro construye las descripciones de herramientas
+   una sola vez (no cambian en runtime) en vez de en cada llamada al modelo.
+3. (Previo) Short-circuit de acciones terminales: sin segundo viaje al modelo.
+4. (Previo) Recall de memoria se saltea si la memoria esta vacia.
+
+## HUD panel (tablero de la GUI)
+
+La GUI web ahora tiene un panel lateral tipo HUD: fecha, pendientes (del
+TaskStore) y clima (si se configura dashboard_city). El servidor expone
+/api/dashboard (tareas + clima via _open_meteo). El frontend lo refresca al
+cargar, cada 60s, y tras cada mensaje. Layout de dos columnas (panel + main);
+en pantallas angostas el panel se oculta. Testeado con TaskStore falso.
