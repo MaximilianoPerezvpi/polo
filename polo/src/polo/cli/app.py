@@ -7,6 +7,8 @@ registramos las herramientas disponibles. El núcleo nunca toma estas decisiones
 
 from __future__ import annotations
 
+import sys
+
 from polo.adapters.speech.kokoro_speaker import KokoroSpeaker
 from polo.adapters.speech.nim_speaker import NimSpeaker
 from polo.adapters.speech.pyttsx_speaker import PyttsxSpeaker
@@ -83,6 +85,12 @@ def _crear_listener(settings: Settings) -> ListenerPort | None:
 
 def main() -> None:
     """Entrada del comando `polo`."""
+    # La consola de Windows suele usar una codepage (p. ej. cp1252) que no
+    # sabe representar emojis; forzamos UTF-8 para que nunca reviente al
+    # imprimir (🎤, 🟢, etc.), incluso si el usuario no configuró chcp 65001.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+
     settings = load_settings()
     configure_logging(settings.log_level)
     log = get_logger("polo.cli")

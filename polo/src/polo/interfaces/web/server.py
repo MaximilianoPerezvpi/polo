@@ -135,7 +135,15 @@ def create_app(
 
 def run() -> None:
     """Entrada del comando `polo-web`."""
+    import sys
+
     import uvicorn
+
+    # La consola de Windows suele usar una codepage (p. ej. cp1252) que no
+    # sabe representar emojis; forzamos UTF-8 para que nunca reviente al
+    # imprimir el banner de arranque, incluso sin chcp 65001.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
 
     settings = load_settings()
     configure_logging(settings.log_level)

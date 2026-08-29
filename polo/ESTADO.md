@@ -68,5 +68,11 @@ src/polo/
 ## Nota sobre el modelo
 
 Con ~20 herramientas, conviene un modelo capaz para el tool-calling. En el `.env`,
-`POLO_NIM_MODEL=meta/llama-3.3-70b-instruct` (o un Nemotron) anda mejor que el 8B
-para decidir herramientas y no marearse con saludos.
+`POLO_NIM_MODEL=nvidia/nemotron-3-super-120b-a12b` anda bien para decidir
+herramientas y no marearse con saludos.
+
+Nota: los modelos `meta/llama-3.1-70b-instruct` y `meta/llama-3.3-70b-instruct`
+que se usaban antes llegaron a end-of-life en NIM el 2026-08-26 (NVIDIA los dio
+de baja). Si `polo-web`/`polo` fallan con "No pude conectar con NVIDIA NIM",
+revisar primero si el modelo configurado sigue vigente
+(`client.models.list()` contra la API, o el catálogo de build.nvidia.com).
