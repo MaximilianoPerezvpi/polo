@@ -25,9 +25,10 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependencias
-        # --extra cloud instala openai (para el adaptador NIM y sus tests).
-        # El grupo dev (ruff, mypy, pytest) se instala por defecto.
-        run: uv sync --extra cloud
+        # Mismos extras que en desarrollo local (ver README): cloud (NIM),
+        # gui (FastAPI, para interfaces/web/), nimvoice (Magpie TTS) y
+        # spotify. El grupo dev (ruff, mypy, pytest) se instala por defecto.
+        run: uv sync --extra cloud --extra gui --extra nimvoice --extra spotify
 
       - name: Ruff (linter)
         run: uv run ruff check .
