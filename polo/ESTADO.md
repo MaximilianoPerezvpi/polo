@@ -55,10 +55,11 @@ src/polo/
 
 ## Lo que falta / próximos pasos
 
-- [ ] CONSOLIDAR: confirmar los 155 tests y subir todo a GitHub
+- [x] CONSOLIDAR: confirmar los 155 tests y subir todo a GitHub
       (repo: MaximilianoPerezvpi/polo). Cuidar de NO subir el .env.
-- [ ] Probar en máquina real: Spotify, voz Magpie, visión (partes que se
-      construyeron sin poder testear).
+- [x] Probar en máquina real: Spotify, voz Magpie, visión — las tres
+      confirmadas funcionando (búsqueda+reproducción, audio Magpie
+      audible, y `llava` describiendo una captura de pantalla real).
 - [ ] Sacar un GIF/demo de la GUI para el README.
 - [ ] Posibles mejoras futuras: briefings proactivos (resumen automático a la
       mañana), Google Calendar (OAuth), streaming de respuestas, cámara en vivo,
